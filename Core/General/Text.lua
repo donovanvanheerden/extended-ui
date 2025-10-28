@@ -194,6 +194,7 @@ local fonts = {
     game27Shadow                            = _G.Game27Font_Shadow,
     game32                                  = _G.Game32Font,
     game32Shadow                            = _G.Game32Font_Shadow,
+    game32Shadow2                           = _G.Game32Font_Shadow2,
     game36                                  = _G.Game36Font,
     game36Shadow                            = _G.Game36Font_Shadow,
     game11_o1                               = _G.Game11Font_o1,
@@ -572,6 +573,7 @@ function addon:ApplyFont()
         SetFont(fonts.game27Shadow,                  font, gigantic, nil, 0, 0, 0, 1)
         SetFont(fonts.game32,                        font)
         SetFont(fonts.game32Shadow,                  font, massive, nil, 0, 0, 0, 1)
+        SetFont(fonts.game32Shadow2,                 font, massive, nil, 0, 0, 0, 1)
         SetFont(fonts.game36,                        font)
         SetFont(fonts.game36Shadow,                  font, colossal, nil, 0, 0, 0, 1)
         SetFont(fonts.game11_o1,                     font)
