@@ -1,21 +1,29 @@
 local _, addonTable = ...
 local addon = addonTable.addon
 
+function addon:UpdateTarget(frame)
+	local healthKey, nameKey, targetOfTarget = "target", "targetReputation", "playertargettarget"
 
-
-function addon:UpdateTarget()
-	local healthKey , nameKey, targetOfTarget = "target", "targetReputation", "playertargettarget"
-
-	self:ApplyStatusBarColor(healthKey, self.db.profile.unitFrames[healthKey])
-	self:ApplyStatusBarColor(nameKey, self.db.profile.unitFrames[nameKey])
-	self:ApplyStatusBarColor(targetOfTarget, self.db.profile.unitFrames[targetOfTarget])
+	-- skip non-retail for focus frame
+	if self:IsRetail() == false and frame.nameBackground then
+		frame.nameBackground:SetAlpha(0)
+	else
+		self:ApplyStatusBarColor(healthKey, self.db.profile.unitFrames[healthKey])
+		self:ApplyStatusBarColor(nameKey, self.db.profile.unitFrames[nameKey])
+		self:ApplyStatusBarColor(targetOfTarget, self.db.profile.unitFrames[targetOfTarget])
+	end
 end
 
-function addon:UpdateFocus()
-	local healthKey , nameKey = "focus", "focusReputation"
+function addon:UpdateFocus(frame)
+	local healthKey, nameKey = "focus", "focusReputation"
 
-	self:ApplyStatusBarColor(healthKey, self.db.profile.unitFrames[healthKey])
-	self:ApplyStatusBarColor(nameKey, self.db.profile.unitFrames[nameKey])
+	-- skip non-retail for focus frame
+	if self:IsRetail() == false and frame.nameBackground then
+		frame.nameBackground:SetAlpha(0)
+	else
+		self:ApplyStatusBarColor(healthKey, self.db.profile.unitFrames[healthKey])
+		self:ApplyStatusBarColor(nameKey, self.db.profile.unitFrames[nameKey])
+	end
 end
 
 function addon:GetUnitFrameOption(info)
@@ -30,23 +38,28 @@ function addon:SetUnitFrameOption(info, value)
 	self.db.profile.unitFrames[key] = value
 
 	if key == "playerHitIndicator" then
-    self:ToggleHitIndicator()
+		self:ToggleHitIndicator()
 	else
 		self:ApplyStatusBarColor(key, value)
 	end
 end
 
 function addon:ToggleHitIndicator()
-  -- TODO: abstract out
-  local hitIndicator = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HitIndicator
+	-- skip non-retail for focus frame
+	if (self:IsRetail() == false) then
+		return
+	end
+
+	-- TODO: abstract out
+	local hitIndicator = PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HitIndicator
 
 	if self.db.profile.unitFrames.playerHitIndicator ~= true then
 		-- hides player indicator text
 		hitIndicator:Hide()
 		hooksecurefunc(PetHitIndicator, "Show", PetHitIndicator.Hide)
-  else
-    hitIndicator:Show()
-    hooksecurefunc(PetHitIndicator, "Show", PetHitIndicator.Show)
+	else
+		hitIndicator:Show()
+		hooksecurefunc(PetHitIndicator, "Show", PetHitIndicator.Show)
 	end
 end
 
@@ -54,15 +67,18 @@ end
 ---@param unitFrame string @ player, target, targetReputation, focus, focusReputation, playertargettarget, alternateManaPower
 ---@param enabled boolean
 function addon:ApplyStatusBarColor(unitFrame, enabled)
-    self:Log('Frame: ' .. unitFrame .. ' ' .. tostring(enabled))
+	self:Log("Frame: " .. unitFrame .. " " .. tostring(enabled))
 
-    local isTextureOption = unitFrame == "power" or unitFrame == "health" or unitFrame == "alternatePower"
+	local isTextureOption = unitFrame == "power" or unitFrame == "health" or unitFrame == "alternatePower"
 
 	enabled = isTextureOption and true or enabled
 
-
-	if addonTable.StatusBars == nil then return end
-	if addonTable.StatusBars[unitFrame] == nil then return end
+	if addonTable.StatusBars == nil then
+		return
+	end
+	if addonTable.StatusBars[unitFrame] == nil then
+		return
+	end
 
 	local target = string.gsub(unitFrame, "Reputation", "")
 
@@ -85,9 +101,8 @@ function addon:ApplyStatusBarColor(unitFrame, enabled)
 			local _, class = UnitClass(target)
 			r, g, b = GetClassColor(class)
 		else
-
 			if unitFrame == "alternateManaPower" and addonTable.StatusBars[unitFrame].powerName == "MANA" then
-                local override = self:GetPowerOverride(addonTable.StatusBars[unitFrame].powerName)
+				local override = self:GetPowerOverride(addonTable.StatusBars[unitFrame].powerName)
 
 				r, g, b = override.r, override.g, override.b
 			else
@@ -97,30 +112,47 @@ function addon:ApplyStatusBarColor(unitFrame, enabled)
 	elseif unitFrame == "power" then
 		r, g, b = UnitSelectionColor(target)
 
-        self:Log(r, g, b)
+		self:Log(r, g, b)
 	end
 
 	if unitFrame == "targetReputation" or unitFrame == "focusReputation" then
-		if enabled then a = 1 end
+		if enabled then
+			a = 1
+		end
 
 		addonTable.StatusBars[unitFrame]:SetVertexColor(r, g, b, a)
 	else
 		addonTable.StatusBars[unitFrame]:SetStatusBarDesaturated(enabled)
 		addonTable.StatusBars[unitFrame]:SetStatusBarColor(r, g, b)
 	end
+end
 
+local function Classic_ApplyClassColor(statusbar, unit)
+	local _, class, c
+	if UnitIsPlayer(unit) and UnitIsConnected(unit) and unit == statusbar.unit and UnitClass(unit) then
+		_, class = UnitClass(unit)
+		r, g, b = GetClassColor(class)
+		statusbar:SetStatusBarColor(r, g, b)
+	end
 end
 
 function addon:ApplyStatusBarColors()
-	for key, value in pairs(self.db.profile.unitFrames) do
-		self:ApplyStatusBarColor(key, value)
+	if self:IsRetail() then
+		for key, value in pairs(self.db.profile.unitFrames) do
+			self:ApplyStatusBarColor(key, value)
+		end
+	else
+		hooksecurefunc("UnitFrameHealthBar_Update", Classic_ApplyClassColor)
+		hooksecurefunc("HealthBar_OnValueChanged", function(ref)
+			Classic_ApplyClassColor(ref, ref.unit)
+		end)
 	end
 
-	self:SecureHook(_G.TargetFrame, "Update", function()
-		self:UpdateTarget()
+	self:SecureHook(_G.FocusFrame, "Update", function(frame)
+		self:UpdateFocus(frame)
 	end)
 
-	self:SecureHook(_G.FocusFrame, "Update", function()
-		self:UpdateFocus()
+	self:SecureHook(_G.TargetFrame, "Update", function(frame)
+		self:UpdateTarget(frame)
 	end)
 end

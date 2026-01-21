@@ -8,21 +8,29 @@ local AceDbOptions = _G.LibStub("AceDBOptions-3.0")
 SLASH_Addon1 = "eui"
 SLASH_ReloadUI = "rl"
 
+addonTable.SlashCmd = {}
+
 function addon:RegisterEvents()
 	self:RegisterEvent("PLAYER_LOGIN")
 	self:RegisterEvent("ADDON_LOADED")
 end
 
 function addon:RegisterCommands()
-    self:RegisterChatCommand(SLASH_Addon1, "SlashCommand")
-	self:RegisterChatCommand(SLASH_ReloadUI, "ReloadUI")
+	SlashCmdList["ExtendedUI"] = addonTable.SlashCmd.OpenOptions
+	SLASH_ExtendedUI1 = "/eui"
+
+	SlashCmdList["ReloadUI"] = addonTable.SlashCmd.ReloadUI
+	SLASH_ReloadUI1 = "/rl"
+
+	-- self:RegisterChatCommand(SLASH_Addon1, "SlashCommand")
+	-- self:RegisterChatCommand(SLASH_ReloadUI, "ReloadUI")
 end
 
-function addon:ReloadUI(message, editBox)
+function addonTable.SlashCmd.ReloadUI(message, editBox)
 	ConsoleExec("reloadui")
 end
 
-function addon:SlashCommand(input)
+function addonTable.SlashCmd.OpenOptions(input)
 	if InCombatLockdown() then
 		self:Print("Cannot access options during combat.")
 		return
@@ -37,13 +45,13 @@ function addon:SlashCommand(input)
 end
 
 function addon:PLAYER_LOGIN()
-    -- self:ApplyFont()
-    self:ApplyStatusBarColors()
+	-- self:ApplyFont()
+	self:ApplyStatusBarColors()
 	self:ToggleHitIndicator()
 
-    -- self:SecureHook("FCF_SetChatWindowFontSize", "FontSizeChanged")
+	-- self:SecureHook("FCF_SetChatWindowFontSize", "FontSizeChanged")
 end
 
 function addon:ADDON_LOADED()
-    -- self:ApplyFont()
+	-- self:ApplyFont()
 end

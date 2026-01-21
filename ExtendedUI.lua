@@ -9,9 +9,9 @@ addonTable.addon = AceAddon:NewAddon(addonName, "AceConsole-3.0", "AceEvent-3.0"
 
 local addon = addonTable.addon
 
-addon.name = addonName;
-addon.version = C_AddOns.GetAddOnMetadata(addonName, 'Version')
-addon.dbName = C_AddOns.GetAddOnMetadata(addonName, 'X-Database')
+addon.name = addonName
+addon.version = C_AddOns.GetAddOnMetadata(addonName, "Version")
+addon.dbName = C_AddOns.GetAddOnMetadata(addonName, "X-Database")
 addon.wowpatch, addon.wowbuild, addon.wowdate, addon.wowtoc = GetBuildInfo()
 addon.locale = GetLocale()
 addonTable._Defaults = {}
@@ -19,21 +19,21 @@ addon.db = {}
 
 addon.Shared = LibStub("LibSharedMedia-3.0")
 
-addon.Shared:Register("font", "Expressway", [[Interface\AddOns\]]..addonName..[[\Fonts\Expressway.ttf]])
+addon.Shared:Register("font", "Expressway", [[Interface\AddOns\]] .. addonName .. [[\Fonts\Expressway.ttf]])
 
 _G[addonName] = addonTable
 
 function addon:OnEnable()
-	addon:Print("v" .. addon.version)
-	addon:Print("Enabled")
+    addon:Print("v" .. addon.version)
+    addon:Print("Enabled")
 
     if addon.db.debug then
         addon:Print("debug mode enabled")
     end
 
-    addon:ApplyScale(tonumber(GetCVar('uiScale')))
+    addon:ApplyScale(tonumber(GetCVar("uiScale")))
     -- Register Addon Integrations
-	addon:RegisterIntegrations()
+    addon:RegisterIntegrations()
 end
 
 function addon:OnInitialize()
@@ -47,8 +47,8 @@ function addon:OnInitialize()
 
     local profiles = AceDbOptions:GetOptionsTable(addon.db)
 
-	AceConfig:RegisterOptionsTable(addon.name.."_Profiles", profiles)
-	AceConfigDialog:AddToBlizOptions(addon.name.."_Profiles", "Profiles", addon.name)
+    AceConfig:RegisterOptionsTable(addon.name .. "_Profiles", profiles)
+    AceConfigDialog:AddToBlizOptions(addon.name .. "_Profiles", "Profiles", addon.name)
 
     addon:ApplyFont()
 
@@ -57,17 +57,27 @@ function addon:OnInitialize()
 end
 
 function addon:OnDisable()
-    print('E - OnDisable')
+    print("E - OnDisable")
 end
-
-
 
 ---@param scale number
 function addon:ApplyScale(scale)
-    if (type(scale) ~= "number") then return end
-    if (scale > 1) then scale = 1 end
-    if (scale < 0.5) then scale = 0.5 end
+    -- print("Applying UI Scale: " .. tostring(scale))
 
-    SetCVar("uiScale", scale);
-    UIParent:SetScale(scale);
+    if (type(scale) ~= "number") then
+        return
+    end
+    if (scale > 1) then
+        scale = 1
+    end
+    if (scale < 0.5) then
+        scale = 0.5
+    end
+
+    SetCVar("uiScale", scale)
+    UIParent:SetScale(scale)
+end
+
+function addon:IsRetail()
+    return _G.WOW_PROJECT_ID == _G.WOW_PROJECT_MAINLINE
 end
