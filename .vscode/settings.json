@@ -25,7 +25,7 @@
     "utf8": "disable"
   },
   "Lua.workspace.library": [
-    "~\\.vscode\\extensions\\ketho.wow-api-0.21.0\\Annotations\\Core"
+    "~\\.vscode\\extensions\\ketho.wow-api-0.22.3\\Annotations\\Core"
   ],
   "Lua.diagnostics.globals": [
     "PlayerFrame",
@@ -69,6 +69,8 @@
     "CharacterMainHandSlot",
     "CharacterSecondaryHandSlot",
     "ObjectiveTrackerFrame",
-    "CONTAINER_OFFSET_Y"
+    "CONTAINER_OFFSET_Y",
+    "ChatEdit_InsertLink",
+    "ChatFrameUtil"
   ]
 }
